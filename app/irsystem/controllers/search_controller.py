@@ -152,29 +152,18 @@ def search():
 		# tags and reviews weighted equally here, but can be changed
 		multiplied = np.multiply(tags_cosine, reviews_cosine)
 
-		# find top n museums
+		# find top n museums, returns in format {museum_name: score}
 		def get_top_n(museum, n, cosine_mat):
-			#n = n + 1
-			#museum_index = museum_to_index[museum]
-			#museum_row = cosine_mat[museum_index]
-			#top_n_temp = np.argpartition(museum_row, -n)[-n:]
-			#top_n_temp = top_n_temp[np.argsort(museum_row[top_n_temp])][::-1]
-			#top_n = []
-			#for i in top_n_temp:
-			#	if(i != museum_index):
-			#		top_n.append(i)
-			#return top_n
 			museum_index = museum_to_index[museum]
 			# get index for top n museums, excluding the query "museum"
 			top_n_ind = np.argsort(-cosine_mat)[1:n+1]
-			top_n = {}
-			# top_n = []
+			top_n_scores = {}
+
 			for t in top_n_ind:
-				# top_n.append(index_to_museum[t])
-				museum_name = index_to_museum[t]
-				# print(museum_info[museum_name])
-				top_n[museum_name] = museum_info[museum_name]['description']
-			return top_n
+				top_n_scores[index_to_museum[t]] = cosine_mat[t]
+			
+			# print(top_n_scores)
+			return top_n_scores
 
 		top_5 = get_top_n(query, 5, multiplied)
 
@@ -191,8 +180,11 @@ def search():
 		#for i in top_5:
 		#	top_5_museums.append(index_to_museum[i])
 
-		#data = top_5_museums
-		data = top_5
+		# data is a dict with format {museum_name: description}
+		data = {}
+		for museum in top_5: 
+			if top_5[museum] != 0: 
+				data[museum] = museum_info[museum]['description']
 
 
 		del museums[-1]
@@ -203,7 +195,12 @@ def search():
 		endsec = time.time()
 		mytimediff = endsec - startsec
 		strtime = str(mytimediff)[:4]
-		output_message = "Your search: " + query + " [" + strtime + " seconds]"
+
+		if (len(data) == 0): 
+			data["    "] = ""
+			output_message = "Sorry, there are no matches at this time. Try searching this category!"
+		else:
+			output_message = "Your search: " + query + " [" + strtime + " seconds]"
 		
 	return render_template('search.html', name=project_name, netid=net_id, output_message=output_message, data=data)
 
