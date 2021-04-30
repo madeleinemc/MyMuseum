@@ -1,6 +1,7 @@
 * {
     margin: 0;
     padding: 0;
+    font-family: "Georgia", serif;
 }
 
 body {
@@ -52,9 +53,24 @@ main {
 
 .output-message {
     margin-top: 0;
-    margin-bottom: 0.6em;
+    margin-bottom: 2em;
     font-size: 2em;
 }
+
+.output-museum {
+    max-width: 75%;
+    margin: 3em auto;
+    text-align: left;
+}
+
+.output-museum-name {
+    margin-bottom: 1em;
+    font-weight: bold;
+}
+
+/* .output-museum-desc {
+    text-align: left;
+} */
 
 footer {
     background-color: #D3A05F;

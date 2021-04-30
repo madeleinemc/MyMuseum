@@ -13,7 +13,7 @@
             <p>Find the museum for you.</p>
 
             <div class="form-group">
-                <!-- TODO: make search form sticky (controller needs to pass in {{query}}) & get rid of "your search" -->
+                <!-- TODO: make search form sticky (controller needs to pass in {{query}}) -->
                 <input aria-label="Search" id="input" type="text" name="search" class="form-control"
                     value="{{search_terms}}" placeholder="Search for museums" />
                 <button type="submit" class="btn btn-info">Go!</button>
@@ -22,9 +22,12 @@
 
         <div class="search-output global-search">
             {% if data %}
-            <h2 class="output-message">{{output_message}}</h2>
+            <h2 class="output-message">{{ output_message }}</h2>
             {% for d in data %}
-            <p class="output-result">{{d}}</p>
+            <div class="output-museum">
+                <h3 class="output-museum-name">{{ d }}</h3>
+                <p class="output-museum-desc">{{ data[d] }}</p>
+            </div>
             {% endfor %}
             {% endif %}
         </div>

@@ -164,13 +164,17 @@ def search():
 			#	if(i != museum_index):
 			#		top_n.append(i)
 			#return top_n
-			n = n+1
 			museum_index = museum_to_index[museum]
-			top_n_ind = np.argsort(-cosine_mat)[:n]
-			top_n = []
+			# get index for top n museums, excluding the query "museum"
+			top_n_ind = np.argsort(-cosine_mat)[1:n+1]
+			top_n = {}
+			# top_n = []
 			for t in top_n_ind:
-				top_n.append(index_to_museum[t])
-			return top_n[1:]
+				# top_n.append(index_to_museum[t])
+				museum_name = index_to_museum[t]
+				# print(museum_info[museum_name])
+				top_n[museum_name] = museum_info[museum_name]['description']
+			return top_n
 
 		top_5 = get_top_n(query, 5, multiplied)
 
