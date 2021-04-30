@@ -97,11 +97,9 @@ def search():
 	if not query:
 		data = []
 		output_message = ''
-		# use search_terms to make input sticky?
-		# search_terms = ''
+		# use to make input sticky
+		query = ''
 	else:
-		# search_terms = query
-		#output_message = "Your search: " + query
 		startsec = time.time()
 
 		tok_query = tokenize(query)
@@ -147,12 +145,12 @@ def search():
 		tags_cosine = get_query_cos(num_museums, tfidf_mat_tags)
 		reviews_cosine = get_query_cos(num_museums, tfidf_mat_reviews)
 
-
 		# higher = similar
 		# tags and reviews weighted equally here, but can be changed
 		multiplied = np.multiply(tags_cosine, reviews_cosine)
 
-		# find top n museums, returns in format {museum_name: score}
+
+		# find top n museums, returns dict with format {museum_name: score}
 		def get_top_n(museum, n, cosine_mat):
 			museum_index = museum_to_index[museum]
 			# get index for top n museums, excluding the query "museum"
@@ -186,7 +184,7 @@ def search():
 			if top_5[museum] != 0: 
 				data[museum] = museum_info[museum]['description']
 
-
+		# clean dataset
 		del museums[-1]
 		del museum_info[query]
 		del museum_to_index[query]
@@ -196,13 +194,14 @@ def search():
 		mytimediff = endsec - startsec
 		strtime = str(mytimediff)[:4]
 
+		# determine output message
 		if (len(data) == 0): 
 			data["    "] = ""
 			output_message = "Sorry, there are no matches at this time. Try searching this category!"
 		else:
 			output_message = "Your search: " + query + " [" + strtime + " seconds]"
 		
-	return render_template('search.html', name=project_name, netid=net_id, output_message=output_message, data=data)
+	return render_template('search.html', name=project_name, netid=net_id, search_terms=query, output_message=output_message, data=data)
 
 
 
