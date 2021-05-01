@@ -28,6 +28,13 @@ def tokenize(text):
     if w != "": words.append(w)
   return words
 
+def ltokenize(loc):
+  temp = re.split('[^a-z0-9-]', loc.lower())
+  nums = []
+  for w in temp:
+    if w != "": nums.append(int(w))
+  return nums
+
 #load traveler ratings
 
 museums = []
@@ -40,10 +47,6 @@ for m in loaded:
 	museum_info[m] = {}
 	for k in loaded[m]:
 		museum_info[m][k] = loaded[m][k]
-
-#create list of museums and inverted
-#museums = list(ratings.keys())
-#inv_museums = {m:v for (v,m) in enumerate(museums)}
 
 #create a TFIDF matrix
 def already_tok(d):
@@ -94,6 +97,7 @@ def build_museum_sims_cos(num_museums, input_doc_mat, index_to_museum=index_to_m
 @irsystem.route('/', methods=['GET'])
 def search():
 	query = request.args.get('search')
+	loc = request.args.get('location')
 	if not query:
 		data = []
 		output_message = ''
@@ -103,6 +107,10 @@ def search():
 		startsec = time.time()
 
 		tok_query = tokenize(query)
+
+		tok_loc = ltokenize(loc)
+		if len(tok_loc) != 2:
+			tok_loc = [40, -70]
 		
 		l = len(museum_info)
 		museum_info[query] = {'ratings': [1, 1, 1, 1, 1], 'tags': tok_query, 'tokenized tags': tok_query, 'review titles': tok_query, 'review content': tok_query, 'tokenized content': tok_query}
@@ -137,6 +145,23 @@ def search():
 				else:
 					qcosmat[i] = input_get_sim_method(mus1, mus2, input_doc_mat, museum_to_index)
 			return qcosmat
+		
+		def location_mat(num_museums, index_to_museum=index_to_museum, museum_to_index=museum_to_index, input_get_sim_method=get_cos_sim):
+			lmat = np.zeros(num_museums)
+			mus1 = query
+			j = museum_to_index[query]
+			for i in range(num_museums):
+				mus2 = index_to_museum[i]
+				if (i == j): lmat[i] = 90
+				else:
+					try:
+						lat = int(museum_info[mus2]['location'][0])
+						long = int(museum_info[mus2]['location'][1])
+					except (ValueError, TypeError):
+						lat = 40
+						long = -70
+					lmat[i] = 90 - ((tok_loc[0] - lat)**2 + (tok_loc[1] - long)**2)**(1/2)
+			return lmat
 
 		# should I add 1 to these matrices?
 		num_museums = len(museums)
@@ -144,10 +169,12 @@ def search():
 		#reviews_cosine = build_museum_sims_cos(num_museums, tfidf_mat_reviews)
 		tags_cosine = get_query_cos(num_museums, tfidf_mat_tags)
 		reviews_cosine = get_query_cos(num_museums, tfidf_mat_reviews)
+		location_matrix = location_mat(num_museums)
 
 		# higher = similar
 		# tags and reviews weighted equally here, but can be changed
 		multiplied = np.multiply(tags_cosine, reviews_cosine)
+		multiplied = np.multiply(multiplied, location_matrix)
 
 
 		# find top n museums, returns dict with format {museum_name: score}
