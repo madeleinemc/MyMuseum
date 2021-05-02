@@ -2,7 +2,7 @@
 
 <head>
     <link rel="stylesheet" href="/static/bootstrap.min.css" />
-    <link rel="stylesheet" href="/static/main.css" />
+    <link rel="stylesheet" type="text/css" href="/static/main.css" />
     <title>Curator: Museum Finder</title>
 </head>
 
@@ -21,6 +21,64 @@
             </div>
         </form>
 
+        <!-- Start of Map Code -->
+        <!-- Code taken from: https://developers.google.com/maps/documentation/javascript/examples/event-click-latlng#all
+          with some modifications-->
+
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+        <script>
+            // These variables indicate the clicked longitude and latitude
+            var curr_long = 0;
+            var curr_lat = 0;
+
+            function initMap() {
+                const myLatlng = { lat: 38.368474229577934, lng: -99.11682335273923 };
+                const map = new google.maps.Map(document.getElementById("map"), {
+                    zoom: 4,
+                    center: myLatlng,
+                });
+                // Create the initial InfoWindow.
+                let infoWindow = new google.maps.InfoWindow({
+                    content: "Click the map to get Latitude and Longitude!",
+                    position: myLatlng,
+                });
+                infoWindow.open(map);
+                // const geocoder = new google.maps.Geocoder(); subscription required :/
+                // Configure the click listener.
+                map.addListener("click", (mapsMouseEvent) => {
+                    // Close the current InfoWindow.
+                    infoWindow.close();
+                    // Create a new InfoWindow.
+                    infoWindow = new google.maps.InfoWindow({
+                        position: mapsMouseEvent.latLng,
+                    });
+
+                    // Get current longitude and latitude
+                    curr_long = mapsMouseEvent.latLng.toJSON().lng.toFixed(2);
+                    curr_lat = mapsMouseEvent.latLng.toJSON().lat.toFixed(2);
+
+                    // Format for the input
+                    formatted_long_lat = "(" + curr_long + ", " + curr_lat + ")"
+                    document.getElementById("input-loc").value = formatted_long_lat;
+
+                    // Displays what to show on the info window -- TODO?
+                    infoWindow.setContent(
+                        "longitude: " + curr_long + " latitude: " + curr_lat
+                    );
+                    infoWindow.open(map);
+                });
+
+            }
+            console.log(curr_long);
+        </script>
+
+        <div id="map"></div>
+        <script
+            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD1Bq3RwUmv7r8VG-3p1OWQVGMypRfTv1I&callback=initMap&libraries=&v=weekly"
+            async></script>
+
+        <!-- End of Map Code -->
+
         <div class="search-output global-search">
             {% if data %}
             <h2 class="output-message">{{ output_message }}</h2>
@@ -32,77 +90,30 @@
             {% endfor %}
             {% endif %}
         </div>
+
+        <button onclick="backToSearch()" id="back-to-search" title="Back to Search">Back to
+            Search</button>
+
+        <script>
+            // takes you to the top of the website for search
+            function backToSearch() {
+                window.pageYOffset, document.documentElement.scrollTop, document.body.scrollTop = 0;
+            }
+
+            button = document.getElementById("back-to-search");
+
+            window.onscroll = () => { scroll() };
+
+            // TODO: change 40 to some other value depending on the length of the website
+            function scroll() {
+                if (document.body.scrollTop < 40 && document.documentElement.scrollTop < 40) {
+                    button.style.display = "none";
+                } else {
+                    button.style.display = "initial";
+                }
+            }
+        </script>
     </main>
-    <!-- Code taken from: https://developers.google.com/maps/documentation/javascript/examples/event-click-latlng#all
-          with some modifications-->
-    <!-- Not sure about the map placement after the search is done; also location not part of algorithm yet, so clicking on map doesn't affect search results -->
-
-    <style type="text/css">
-        /* Always set the map height explicitly to define the size of the div
- * element that contains the map. */
-        #map {
-            height: 50%;
-            width: 50%;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        /* Optional: Makes the sample page fill the window. */
-        html,
-        body {
-            height: 100%;
-            margin: 0;
-            padding: 0;
-        }
-    </style>
-
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
-    <script>
-        // These variables indicate the clicked longitude and latitude, maybe these are necessary when we pass them to algo?
-        var curr_long = 0;
-        var curr_lat = 0;
-
-        function initMap() {
-            const myLatlng = { lat: 38.368474229577934, lng: -99.11682335273923 };
-            const map = new google.maps.Map(document.getElementById("map"), {
-                zoom: 4,
-                center: myLatlng,
-            });
-            // Create the initial InfoWindow.
-            let infoWindow = new google.maps.InfoWindow({
-                content: "Click the map to get Latitude and Longitude!",
-                position: myLatlng,
-            });
-            infoWindow.open(map);
-            // const geocoder = new google.maps.Geocoder(); subscription required :/
-            // Configure the click listener.
-            map.addListener("click", (mapsMouseEvent) => {
-                // Close the current InfoWindow.
-                infoWindow.close();
-                // Create a new InfoWindow.
-                infoWindow = new google.maps.InfoWindow({
-                    position: mapsMouseEvent.latLng,
-                });
-
-                curr_long = mapsMouseEvent.latLng.toJSON().lng.toFixed(2);
-                curr_lat = mapsMouseEvent.latLng.toJSON().lat.toFixed(2);
-                formatted_long_lat = "(" + curr_long + ", " + curr_lat + ")"
-                document.getElementById("input-loc").value = formatted_long_lat;
-                infoWindow.setContent(
-                    "longitude: " + curr_long + " latitude: " + curr_lat
-                );
-                infoWindow.open(map);
-            });
-
-        }
-        console.log(curr_long);
-    </script>
-
-    <div id="map"></div>
-    <script
-        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD1Bq3RwUmv7r8VG-3p1OWQVGMypRfTv1I&callback=initMap&libraries=&v=weekly"
-        async></script>
-    <!-- End of Map Code -->
 
     <footer>
         <p>Project Name: {{ name }}</p>

@@ -14,6 +14,32 @@ main {
     min-height: 76vh;
 }
 
+#back-to-search {
+    display: none;
+    color: white;
+    font-size: 15px;
+    background-color:#3468bf;
+    z-index: 1000;
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    border: none;
+    cursor: pointer;
+    padding: 10px;
+    border-radius: 4px;
+  }
+
+#back-to-search:hover {
+    background-color: #46b8da;
+}
+
+#map {
+    height: 50%;
+    width: 50%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
 .step-links a {
     color: #5F8AD3;
 }
@@ -87,9 +113,9 @@ footer {
         max-width: 970px;
     }
 }
-    
+
 @media (min-width:400px) {
-    
+
     .global-search {
         padding: 20px 0;
         text-align: center;
