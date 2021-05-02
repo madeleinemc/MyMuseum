@@ -233,4 +233,8 @@ def search():
 				data[name]["location"] = "(" + str(loaded[name]["location"][0]) + ", " + str(loaded[name]["location"][1]) + ")"
 				data[name]["location_link"] = "https://www.google.com/maps/embed/v1/place?key=AIzaSyD1Bq3RwUmv7r8VG-3p1OWQVGMypRfTv1I&q=" + data[name]["location"]
 
+	# data is in the format of dictionary where key = name of the museum, value = dictionary of information
+	# for example,
+	# {'museum name1': {"description": "good museum", "location": (123, 123), "location_link": "curator.com"}}
+
 	return render_template('search.html', name=project_name, netid=net_id, search_terms=query, output_message=output_message, data=data)
