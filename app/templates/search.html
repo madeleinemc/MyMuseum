@@ -85,9 +85,14 @@
             {% for d in data %}
             <div class="output-museum">
                 <h3 class="output-museum-name">{{ d }}</h3>
-                <p class="output-museum-desc">{{ data[d] }}</p>
+                <p class="output-museum-desc">{{ data[d]["description"] }}</p>
+                <iframe class="output-museum-map" id="output-museum-map" width="600" height="450" style="border:0"
+                    loading="lazy" allowfullscreen src="{{ data[d]['location_link']}}">
+                </iframe>
+
             </div>
             {% endfor %}
+
             {% endif %}
         </div>
 

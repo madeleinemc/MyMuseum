@@ -1,4 +1,4 @@
-from . import *  
+from . import *
 from app.irsystem.models.helpers import *
 from app.irsystem.models.helpers import NumpyEncoder as NumpyEncoder
 
@@ -14,7 +14,7 @@ nltk.download('stopwords')
 
 import sys
 assert sys.version_info.major == 3
-from nltk.corpus import stopwords 
+from nltk.corpus import stopwords
 
 import time
 
@@ -64,20 +64,20 @@ for m in museums:
 index_to_museum = {v:k for k,v in museum_to_index.items()}
 
 # get cosine similarity
-def get_cos_sim(mus1, mus2, input_doc_mat, 
+def get_cos_sim(mus1, mus2, input_doc_mat,
 								museum_to_index=museum_to_index):
 
   v1 = input_doc_mat[museum_to_index[mus1]]
   v2 = input_doc_mat[museum_to_index[mus2]]
   vec1 = np.array(v1)
   vec2 = np.array(v2)
-  
+
   normvec1 = np.linalg.norm(vec1)
   normvec2 = np.linalg.norm(vec2)
-  
+
   n = np.dot(vec1, vec2)
   m = np.dot(normvec1, normvec2)
-  
+
   return n/(m+1)
 
 # construct cosine similarity matrix
@@ -111,7 +111,7 @@ def search():
 		tok_loc = ltokenize(loc)
 		if len(tok_loc) != 2:
 			tok_loc = [40, -70]
-		
+
 		l = len(museum_info)
 		museum_info[query] = {'ratings': [1, 1, 1, 1, 1], 'tags': tok_query, 'tokenized tags': tok_query, 'review titles': tok_query, 'review content': tok_query, 'tokenized content': tok_query}
 		museums.append(query)
@@ -145,7 +145,7 @@ def search():
 				else:
 					qcosmat[i] = input_get_sim_method(mus1, mus2, input_doc_mat, museum_to_index)
 			return qcosmat
-		
+
 		def location_mat(num_museums, index_to_museum=index_to_museum, museum_to_index=museum_to_index, input_get_sim_method=get_cos_sim):
 			lmat = np.zeros(num_museums)
 			mus1 = query
@@ -186,7 +186,7 @@ def search():
 
 			for t in top_n_ind:
 				top_n_scores[index_to_museum[t]] = cosine_mat[t]
-			
+
 			# print(top_n_scores)
 			return top_n_scores
 
@@ -207,9 +207,9 @@ def search():
 
 		# data is a dict with format {museum_name: description}
 		data = {}
-		for museum in top_5: 
-			if top_5[museum] != 0: 
-				data[museum] = museum_info[museum]['description']
+		for museum in top_5:
+			if top_5[museum] != 0:
+				data[museum] = {"description" : museum_info[museum]['description']}
 
 		# clean dataset
 		del museums[-1]
@@ -222,13 +222,15 @@ def search():
 		strtime = str(mytimediff)[:4]
 
 		# determine output message
-		if (len(data) == 0): 
+		if (len(data) == 0):
 			data["    "] = ""
 			output_message = "Sorry, there are no matches at this time. Try searching this category!"
 		else:
 			output_message = "Your search: " + query + " [" + strtime + " seconds]"
-		
+
+			# add location info to data
+			for name in data:
+				data[name]["location"] = "(" + str(loaded[name]["location"][0]) + ", " + str(loaded[name]["location"][1]) + ")"
+				data[name]["location_link"] = "https://www.google.com/maps/embed/v1/place?key=AIzaSyD1Bq3RwUmv7r8VG-3p1OWQVGMypRfTv1I&q=" + data[name]["location"]
+
 	return render_template('search.html', name=project_name, netid=net_id, search_terms=query, output_message=output_message, data=data)
-
-
-
