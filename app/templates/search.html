@@ -83,10 +83,23 @@
             <h2 class="output-message">{{ output_message }}</h2>
             {% if data|length() > 0 %}
             {% for d in data %}
+            {% set d_with_underscores = d|replace(" ", "_") %}
+            {% set review_list_id = "reviews-list-" ~ d_with_underscores %}
+            {% set review_toggle_id = "toggle-reviews-" ~ d_with_underscores %}
             <div class="output-museum">
                 <h3 class="output-museum-name">{{ d }}</h3>
                 <p class="output-museum-desc">Score: {{ data[d]["score"] }}</p>
                 <p class="output-museum-desc">{{ data[d]["description"] }}</p>
+
+                <!-- show/hide reviews; looks ugly but apparently works -->
+                <button onclick="toggleReviews('{{ review_list_id }}', '{{ review_toggle_id }}')"
+                    id="{{ review_toggle_id }}" class="toggle-reviews">show reviews</button>
+                <ul id="{{ review_list_id }}" class="review-quotes-list hidden">
+                    {% for review_quote in data[d]["review_quotes"] %}
+                    <li class="output-review-quote">{{ review_quote }}</li>
+                    {% endfor %}
+                </ul>
+
                 <iframe class="output-museum-map" id="output-museum-map" width="600" height="450" style="border:0"
                     loading="lazy" allowfullscreen src="{{ data[d]['location_link']}}">
                 </iframe>
@@ -114,6 +127,25 @@
                     button.style.display = "none";
                 } else {
                     button.style.display = "initial";
+                }
+            }
+
+            // show/hide review quotes
+            function toggleReviews(reviewListId, toggleButtonId) {
+                // get reviews list
+                var reviewQuotes = document.getElementById(reviewListId);
+                // whether reviews are hidden
+                var isHidden = reviewQuotes.classList.contains('hidden');
+
+                // get toggle button
+                var toggleReviews = document.getElementById(toggleButtonId);
+
+                // toggle review display and button text
+                reviewQuotes.classList.toggle('hidden');
+                if (isHidden) {
+                    toggleReviews.innerHTML = 'hide reviews';
+                } else {
+                    toggleReviews.innerHTML = 'show reviews';
                 }
             }
         </script>

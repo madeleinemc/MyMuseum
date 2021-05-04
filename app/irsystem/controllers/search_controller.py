@@ -48,6 +48,16 @@ for m in loaded:
 	for k in loaded[m]:
 		museum_info[m][k] = loaded[m][k]
 
+file = open("review_quote_MERGED.json")
+# loaded = json.load(file)
+raw_review_quotes = json.load(file)
+# raw_review_quotes = {}
+# for m in loaded:
+# 	museums.append(m)
+# 	museum_info[m] = {}
+# 	for k in loaded[m]:
+# 		museum_info[m][k] = loaded[m][k]
+
 #create a TFIDF matrix
 def already_tok(d):
 	return d
@@ -226,15 +236,20 @@ def search():
 			# data["    "] = ""
 			output_message = "Sorry, there are no matches at this time. Try searching this category!"
 		else:
-			output_message = "Your search: " + query + " [" + strtime + " seconds]"
+			output_message = "Your search: " + query + " [" + strtime + " seconds]"				
 
-			# add location info to data
 			for name in data:
+				# add raw review quotes to data
+				data[name]["review_quotes"] = []
+				for quote in raw_review_quotes[name]:
+					data[name]["review_quotes"].append(quote)
+
+				# add location info to data
 				data[name]["location"] = "(" + str(loaded[name]["location"][0]) + ", " + str(loaded[name]["location"][1]) + ")"
 				data[name]["location_link"] = "https://www.google.com/maps/embed/v1/place?key=AIzaSyD1Bq3RwUmv7r8VG-3p1OWQVGMypRfTv1I&q=" + data[name]["location"]
 
 	# data is in the format of dictionary where key = name of the museum, value = dictionary of information
 	# for example,
-	# {'museum name1': {"description": "good museum", "score": 0, "location": (123, 123), "location_link": "curator.com"}}
+	# {'museum name1': {"description": "good museum", "score": 0, "review_quotes": [], "location": (123, 123), "location_link": "curator.com"}}
 
 	return render_template('search.html', name=project_name, netid=net_id, search_terms=query, output_message=output_message, data=data)

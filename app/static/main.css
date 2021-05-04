@@ -14,6 +14,10 @@ main {
     min-height: 76vh;
 }
 
+.hidden {
+    display: none;
+}
+
 #back-to-search {
     display: none;
     color: white;
@@ -32,6 +36,8 @@ main {
 #back-to-search:hover {
     background-color: #46b8da;
 }
+
+/* search */
 
 #map {
     height: 50%;
@@ -77,6 +83,8 @@ main {
     margin-bottom: 0;
 }
 
+/* output */
+
 .output-message {
     margin-top: 0;
     margin-bottom: 2em;
@@ -90,13 +98,38 @@ main {
 }
 
 .output-museum-name {
-    margin-bottom: 0.5em;
+    margin-bottom: 0.4em;
     font-weight: bold;
 }
 
 .output-museum-desc {
     margin-top: 0.3em;
     margin-bottom: 0.3em;
+}
+
+.toggle-reviews {
+    border: none;
+    background-color: burlywood;
+    color: darkblue;
+    font-size: 1.3em;
+    display: block;
+    margin-bottom: 0.3em;
+}
+
+.toggle-reviews:hover {
+    text-decoration: underline;
+}
+
+.review-quotes-list {
+    list-style-type: none;
+}
+
+.output-review-quote {
+    font-size: 1.3em;
+    border-top: solid;
+    border-width: thin;
+    padding-top: 0.5em;
+    padding-bottom: 0.5em;
 }
 
 footer {
