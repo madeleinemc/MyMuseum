@@ -1,4 +1,4 @@
-from . import *  
+from . import *
 from app.irsystem.models.helpers import *
 from app.irsystem.models.helpers import NumpyEncoder as NumpyEncoder
 
@@ -14,7 +14,7 @@ nltk.download('stopwords')
 
 import sys
 assert sys.version_info.major == 3
-from nltk.corpus import stopwords 
+from nltk.corpus import stopwords
 
 import time
 
@@ -27,6 +27,13 @@ def tokenize(text):
   for w in temp:
     if w != "": words.append(w)
   return words
+
+def ltokenize(loc):
+  temp = re.split('[^a-z0-9-]', loc.lower())
+  nums = []
+  for w in temp:
+    if w != "": nums.append(int(w))
+  return nums
 
 #load traveler ratings
 
@@ -41,9 +48,15 @@ for m in loaded:
 	for k in loaded[m]:
 		museum_info[m][k] = loaded[m][k]
 
-#create list of museums and inverted
-#museums = list(ratings.keys())
-#inv_museums = {m:v for (v,m) in enumerate(museums)}
+file = open("review_quote_MERGED.json")
+# loaded = json.load(file)
+raw_review_quotes = json.load(file)
+# raw_review_quotes = {}
+# for m in loaded:
+# 	museums.append(m)
+# 	museum_info[m] = {}
+# 	for k in loaded[m]:
+# 		museum_info[m][k] = loaded[m][k]
 
 #create a TFIDF matrix
 def already_tok(d):
@@ -61,20 +74,20 @@ for m in museums:
 index_to_museum = {v:k for k,v in museum_to_index.items()}
 
 # get cosine similarity
-def get_cos_sim(mus1, mus2, input_doc_mat, 
+def get_cos_sim(mus1, mus2, input_doc_mat,
 								museum_to_index=museum_to_index):
 
   v1 = input_doc_mat[museum_to_index[mus1]]
   v2 = input_doc_mat[museum_to_index[mus2]]
   vec1 = np.array(v1)
   vec2 = np.array(v2)
-  
+
   normvec1 = np.linalg.norm(vec1)
   normvec2 = np.linalg.norm(vec2)
-  
+
   n = np.dot(vec1, vec2)
   m = np.dot(normvec1, normvec2)
-  
+
   return n/(m+1)
 
 # construct cosine similarity matrix
@@ -94,18 +107,21 @@ def build_museum_sims_cos(num_museums, input_doc_mat, index_to_museum=index_to_m
 @irsystem.route('/', methods=['GET'])
 def search():
 	query = request.args.get('search')
+	loc = request.args.get('location')
 	if not query:
 		data = []
 		output_message = ''
-		# use search_terms to make input sticky?
-		# search_terms = ''
+		# use to make input sticky
+		query = ''
 	else:
-		# search_terms = query
-		#output_message = "Your search: " + query
 		startsec = time.time()
 
 		tok_query = tokenize(query)
-		
+
+		tok_loc = ltokenize(loc)
+		if len(tok_loc) != 2:
+			tok_loc = [40, -70]
+
 		l = len(museum_info)
 		museum_info[query] = {'ratings': [1, 1, 1, 1, 1], 'tags': tok_query, 'tokenized tags': tok_query, 'review titles': tok_query, 'review content': tok_query, 'tokenized content': tok_query}
 		museums.append(query)
@@ -140,39 +156,48 @@ def search():
 					qcosmat[i] = input_get_sim_method(mus1, mus2, input_doc_mat, museum_to_index)
 			return qcosmat
 
+		def location_mat(num_museums, index_to_museum=index_to_museum, museum_to_index=museum_to_index, input_get_sim_method=get_cos_sim):
+			lmat = np.zeros(num_museums)
+			mus1 = query
+			j = museum_to_index[query]
+			for i in range(num_museums):
+				mus2 = index_to_museum[i]
+				if (i == j): lmat[i] = 90
+				else:
+					try:
+						lat = int(museum_info[mus2]['location'][0])
+						long = int(museum_info[mus2]['location'][1])
+					except (ValueError, TypeError):
+						lat = 40
+						long = -70
+					lmat[i] = 90 - ((tok_loc[0] - lat)**2 + (tok_loc[1] - long)**2)**(1/2)
+			return lmat
+
 		# should I add 1 to these matrices?
 		num_museums = len(museums)
 		#tags_cosine = build_museum_sims_cos(num_museums, tfidf_mat_tags)
 		#reviews_cosine = build_museum_sims_cos(num_museums, tfidf_mat_reviews)
 		tags_cosine = get_query_cos(num_museums, tfidf_mat_tags)
 		reviews_cosine = get_query_cos(num_museums, tfidf_mat_reviews)
-
+		location_matrix = location_mat(num_museums)
 
 		# higher = similar
 		# tags and reviews weighted equally here, but can be changed
 		multiplied = np.multiply(tags_cosine, reviews_cosine)
+		multiplied = np.multiply(multiplied, location_matrix)
 
-		# find top n museums
+
+		# find top n museums, returns dict with format {museum_name: score}
 		def get_top_n(museum, n, cosine_mat):
-			#n = n + 1
-			#museum_index = museum_to_index[museum]
-			#museum_row = cosine_mat[museum_index]
-			#top_n_temp = np.argpartition(museum_row, -n)[-n:]
-			#top_n_temp = top_n_temp[np.argsort(museum_row[top_n_temp])][::-1]
-			#top_n = []
-			#for i in top_n_temp:
-			#	if(i != museum_index):
-			#		top_n.append(i)
-			#return top_n
-			n = n+1
 			museum_index = museum_to_index[museum]
-			top_n_ind = np.argsort(-cosine_mat)[:n]
-			top_n = []
-			top_n_scores={}
-			for t in top_n_ind[1:]:
+			# get index for top n museums, excluding the query "museum"
+			top_n_ind = np.argsort(-cosine_mat)[1:n+1]
+			top_n_scores = {}
+
+			for t in top_n_ind:
 				top_n_scores[index_to_museum[t]] = cosine_mat[t]
-				# top_n.append(index_to_museum[t])
-			print(top_n_scores)
+
+			# print(top_n_scores)
 			return top_n_scores
 
 		top_5 = get_top_n(query, 5, multiplied)
@@ -190,14 +215,13 @@ def search():
 		#for i in top_5:
 		#	top_5_museums.append(index_to_museum[i])
 
-		#data = top_5_museums
-		results = []
-		for museum in top_5: 
-			if top_5[museum] != 0: 
-				results.append(museum)
-		data = results
+		# data is a dict with format {museum_name: {description: x, score: x}}
+		data = {}
+		for museum in top_5:
+			if top_5[museum] != 0:
+				data[museum] = {"description" : museum_info[museum]['description'], "score": round(top_5[museum], 2)}
 
-
+		# clean dataset
 		del museums[-1]
 		del museum_info[query]
 		del museum_to_index[query]
@@ -207,13 +231,25 @@ def search():
 		mytimediff = endsec - startsec
 		strtime = str(mytimediff)[:4]
 
-		if (len(data) == 0): 
-			data.append("    ")
-			output_message = "Sorry there are no matches at this time. Try searching this category!"
+		# determine output message
+		if (len(data) == 0):
+			# data["    "] = ""
+			output_message = "Sorry, there are no matches at this time. Try searching this category!"
 		else:
-			output_message = "Your search: " + query + " [" + strtime + " seconds]"
-		
-	return render_template('search.html', name=project_name, netid=net_id, output_message=output_message, data=data)
+			output_message = "Your search: " + query + " [" + strtime + " seconds]"				
 
+			for name in data:
+				# add raw review quotes to data
+				data[name]["review_quotes"] = []
+				for quote in raw_review_quotes[name]:
+					data[name]["review_quotes"].append(quote)
 
+				# add location info to data
+				data[name]["location"] = "(" + str(loaded[name]["location"][0]) + ", " + str(loaded[name]["location"][1]) + ")"
+				data[name]["location_link"] = "https://www.google.com/maps/embed/v1/place?key=AIzaSyD1Bq3RwUmv7r8VG-3p1OWQVGMypRfTv1I&q=" + data[name]["location"]
 
+	# data is in the format of dictionary where key = name of the museum, value = dictionary of information
+	# for example,
+	# {'museum name1': {"description": "good museum", "score": 0, "review_quotes": [], "location": (123, 123), "location_link": "curator.com"}}
+
+	return render_template('search.html', name=project_name, netid=net_id, search_terms=query, output_message=output_message, data=data)
