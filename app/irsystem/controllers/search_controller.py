@@ -205,11 +205,11 @@ def search():
 		#for i in top_5:
 		#	top_5_museums.append(index_to_museum[i])
 
-		# data is a dict with format {museum_name: description}
+		# data is a dict with format {museum_name: {description: x, score: x}}
 		data = {}
 		for museum in top_5:
 			if top_5[museum] != 0:
-				data[museum] = {"description" : museum_info[museum]['description']}
+				data[museum] = {"description" : museum_info[museum]['description'], "score": round(top_5[museum], 2)}
 
 		# clean dataset
 		del museums[-1]
@@ -223,7 +223,7 @@ def search():
 
 		# determine output message
 		if (len(data) == 0):
-			data["    "] = ""
+			# data["    "] = ""
 			output_message = "Sorry, there are no matches at this time. Try searching this category!"
 		else:
 			output_message = "Your search: " + query + " [" + strtime + " seconds]"
@@ -235,6 +235,6 @@ def search():
 
 	# data is in the format of dictionary where key = name of the museum, value = dictionary of information
 	# for example,
-	# {'museum name1': {"description": "good museum", "location": (123, 123), "location_link": "curator.com"}}
+	# {'museum name1': {"description": "good museum", "score": 0, "location": (123, 123), "location_link": "curator.com"}}
 
 	return render_template('search.html', name=project_name, netid=net_id, search_terms=query, output_message=output_message, data=data)

@@ -90,13 +90,14 @@ main {
 }
 
 .output-museum-name {
-    margin-bottom: 1em;
+    margin-bottom: 0.5em;
     font-weight: bold;
 }
 
-/* .output-museum-desc {
-    text-align: left;
-} */
+.output-museum-desc {
+    margin-top: 0.3em;
+    margin-bottom: 0.3em;
+}
 
 footer {
     background-color: #D3A05F;
