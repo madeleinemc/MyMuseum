@@ -16,6 +16,9 @@
                 <!-- TODO: make search form sticky (controller needs to pass in {{query}}) & get rid of "your search" -->
                 <input aria-label="Search" id="input" type="text" name="search" class="form-control"
                     value="{{search_terms}}" placeholder="Search for museums" />
+                <label class="checkContainer">Hide Bird Visualizations
+                    <input aria-label="Free" id="freeInput" type="checkbox" name="freeSearch" class="form-control">
+                </label>
                 <button type="submit" class="btn btn-info">Go!</button>
             </div>
         </form>
