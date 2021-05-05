@@ -113,10 +113,11 @@ def search():
 			tok_loc = [40, -70]
 		
 		l = len(museum_info)
-		museum_info[query] = {'ratings': [1, 1, 1, 1, 1], 'tags': tok_query, 'tokenized tags': tok_query, 'review titles': tok_query, 'review content': tok_query, 'tokenized content': tok_query}
+		museum_info[query] = {'ratings': [1, 1, 1, 1, 1], 'tags': tok_query, 'tokenized tags': tok_query, 'review titles': tok_query, 'review content': tok_query, 'tokenized content': tok_query, 'location': tok_loc}
 		museums.append(query)
 		museum_to_index[query] = l
 		index_to_museum[l] = query
+		print(l)
 
 
 		# min df originally 10
@@ -174,7 +175,7 @@ def search():
 		# higher = similar
 		# tags and reviews weighted equally here, but can be changed
 		multiplied = np.multiply(tags_cosine, reviews_cosine)
-		multiplied = np.multiply(multiplied, location_matrix)
+		multiplied = np.multiply(multiplied, location_matrix * 0.4)
 
 
 		# find top n museums, returns dict with format {museum_name: score}
@@ -224,7 +225,7 @@ def search():
 		# determine output message
 		if (len(data) == 0): 
 			data["    "] = ""
-			output_message = "Sorry, there are no matches at this time. Try searching this category!"
+			output_message = "Sorry, there are no matches at this time. Try searching for something else!"
 		else:
 			output_message = "Your search: " + query + " [" + strtime + " seconds]"
 		
