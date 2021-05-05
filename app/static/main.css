@@ -14,6 +14,38 @@ main {
     min-height: 76vh;
 }
 
+.hidden {
+    display: none;
+}
+
+#back-to-search {
+    display: none;
+    color: white;
+    font-size: 15px;
+    background-color:#3468bf;
+    z-index: 1000;
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    border: none;
+    cursor: pointer;
+    padding: 10px;
+    border-radius: 4px;
+  }
+
+#back-to-search:hover {
+    background-color: #46b8da;
+}
+
+/* search */
+
+#map {
+    height: 50%;
+    width: 50%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
 .step-links a {
     color: #5F8AD3;
 }
@@ -51,6 +83,8 @@ main {
     margin-bottom: 0;
 }
 
+/* output */
+
 .output-message {
     margin-top: 0;
     margin-bottom: 2em;
@@ -64,13 +98,39 @@ main {
 }
 
 .output-museum-name {
-    margin-bottom: 1em;
+    margin-bottom: 0.4em;
     font-weight: bold;
 }
 
-/* .output-museum-desc {
-    text-align: left;
-} */
+.output-museum-desc {
+    margin-top: 0.3em;
+    margin-bottom: 0.3em;
+}
+
+.toggle-reviews {
+    border: none;
+    background-color: burlywood;
+    color: darkblue;
+    font-size: 1.3em;
+    display: block;
+    margin-bottom: 0.3em;
+}
+
+.toggle-reviews:hover {
+    text-decoration: underline;
+}
+
+.review-quotes-list {
+    list-style-type: none;
+}
+
+.output-review-quote {
+    font-size: 1.3em;
+    border-top: solid;
+    border-width: thin;
+    padding-top: 0.5em;
+    padding-bottom: 0.5em;
+}
 
 footer {
     background-color: #D3A05F;
@@ -87,9 +147,9 @@ footer {
         max-width: 970px;
     }
 }
-    
+
 @media (min-width:400px) {
-    
+
     .global-search {
         padding: 20px 0;
         text-align: center;

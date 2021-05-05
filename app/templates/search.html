@@ -2,7 +2,7 @@
 
 <head>
     <link rel="stylesheet" href="/static/bootstrap.min.css" />
-    <link rel="stylesheet" href="/static/main.css" />
+    <link rel="stylesheet" type="text/css" href="/static/main.css" />
     <title>Curator: Museum Finder</title>
 </head>
 
@@ -14,31 +14,150 @@
 
             <div class="form-group">
                 <input aria-label="Search" id="input" type="text" name="search" class="form-control"
-                    value="{{ search_terms }}" placeholder="Search for museums" />
+                    value="{{search_terms}}" placeholder="Search for museums" />
+                <label class="checkContainer">Hide Bird Visualizations
+                    <input aria-label="Free" id="freeInput" type="checkbox" name="freeSearch" class="form-control">
+                </label>
                 <input aria-label="Location (if preferred)" id="input-loc" type="text" name="location"
                     class="form-control" value="" placeholder="Location as (Latitude, Longitude) (optional)" />
                 <button type="submit" class="btn btn-info">Go!</button>
             </div>
         </form>
 
+        <!-- Start of Map Code -->
+        <!-- Code taken from: https://developers.google.com/maps/documentation/javascript/examples/event-click-latlng#all
+          with some modifications-->
+
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+        <script>
+            // These variables indicate the clicked longitude and latitude
+            var curr_long = 0;
+            var curr_lat = 0;
+
+            function initMap() {
+                const myLatlng = { lat: 38.368474229577934, lng: -99.11682335273923 };
+                const map = new google.maps.Map(document.getElementById("map"), {
+                    zoom: 4,
+                    center: myLatlng,
+                });
+                // Create the initial InfoWindow.
+                let infoWindow = new google.maps.InfoWindow({
+                    content: "Click the map to get Latitude and Longitude!",
+                    position: myLatlng,
+                });
+                infoWindow.open(map);
+                // const geocoder = new google.maps.Geocoder(); subscription required :/
+                // Configure the click listener.
+                map.addListener("click", (mapsMouseEvent) => {
+                    // Close the current InfoWindow.
+                    infoWindow.close();
+                    // Create a new InfoWindow.
+                    infoWindow = new google.maps.InfoWindow({
+                        position: mapsMouseEvent.latLng,
+                    });
+
+                    // Get current longitude and latitude
+                    curr_long = mapsMouseEvent.latLng.toJSON().lng.toFixed(2);
+                    curr_lat = mapsMouseEvent.latLng.toJSON().lat.toFixed(2);
+
+                    // Format for the input
+                    formatted_long_lat = "(" + curr_long + ", " + curr_lat + ")"
+                    document.getElementById("input-loc").value = formatted_long_lat;
+
+                    // Displays what to show on the info window -- TODO?
+                    infoWindow.setContent(
+                        "longitude: " + curr_long + " latitude: " + curr_lat
+                    );
+                    infoWindow.open(map);
+                });
+
+            }
+            console.log(curr_long);
+        </script>
+
+        <div id="map"></div>
+        <script
+            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD1Bq3RwUmv7r8VG-3p1OWQVGMypRfTv1I&callback=initMap&libraries=&v=weekly"
+            async></script>
+
+        <!-- End of Map Code -->
+
         <div class="search-output global-search">
-            {% if data %}
             <h2 class="output-message">{{ output_message }}</h2>
+            {% if data|length() > 0 %}
             {% for d in data %}
+            {% set d_with_underscores = d|replace(" ", "_") %}
+            {% set review_list_id = "reviews-list-" ~ d_with_underscores %}
+            {% set review_toggle_id = "toggle-reviews-" ~ d_with_underscores %}
             <div class="output-museum">
                 <h3 class="output-museum-name">{{ d }}</h3>
-                <p class="output-museum-desc">{{ data[d] }}</p>
+                <p class="output-museum-desc">Score: {{ data[d]["score"] }}</p>
+                <p class="output-museum-desc">{{ data[d]["description"] }}</p>
+
+                <!-- show/hide reviews; looks ugly but apparently works -->
+                <button onclick="toggleReviews('{{ review_list_id }}', '{{ review_toggle_id }}')"
+                    id="{{ review_toggle_id }}" class="toggle-reviews">show reviews</button>
+                <ul id="{{ review_list_id }}" class="review-quotes-list hidden">
+                    {% for review_quote in data[d]["review_quotes"] %}
+                    <li class="output-review-quote">{{ review_quote }}</li>
+                    {% endfor %}
+                </ul>
+
+                <iframe class="output-museum-map" id="output-museum-map" width="600" height="450" style="border:0"
+                    loading="lazy" allowfullscreen src="{{ data[d]['location_link']}}">
+                </iframe>
             </div>
             {% endfor %}
             {% endif %}
         </div>
+
+        <button onclick="backToSearch()" id="back-to-search" title="Back to Search">Back to
+            Search</button>
+
+        <script>
+            // takes you to the top of the website for search
+            function backToSearch() {
+                window.pageYOffset, document.documentElement.scrollTop, document.body.scrollTop = 0;
+            }
+
+            button = document.getElementById("back-to-search");
+
+            window.onscroll = () => { scroll() };
+
+            // TODO: change 40 to some other value depending on the length of the website
+            function scroll() {
+                if (document.body.scrollTop < 40 && document.documentElement.scrollTop < 40) {
+                    button.style.display = "none";
+                } else {
+                    button.style.display = "initial";
+                }
+            }
+
+            // show/hide review quotes
+            function toggleReviews(reviewListId, toggleButtonId) {
+                // get reviews list
+                var reviewQuotes = document.getElementById(reviewListId);
+                // whether reviews are hidden
+                var isHidden = reviewQuotes.classList.contains('hidden');
+
+                // get toggle button
+                var toggleReviews = document.getElementById(toggleButtonId);
+
+                // toggle review display and button text
+                reviewQuotes.classList.toggle('hidden');
+                if (isHidden) {
+                    toggleReviews.innerHTML = 'hide reviews';
+                } else {
+                    toggleReviews.innerHTML = 'show reviews';
+                }
+            }
+        </script>
     </main>
 
     <footer>
         <p>Project Name: {{ name }}</p>
         <p>Student Names: {{ netid }}</p>
     </footer>
-
 </body>
 
 </html>
