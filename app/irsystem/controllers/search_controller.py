@@ -124,6 +124,7 @@ def search():
 	query = request.args.get('search')
 	loc = request.args.get('location')
 	free = request.args.get("freeSearch")
+	family = request.args.get("familySearch")
 	if not query:
 		data = []
 		output_message = ''
@@ -232,40 +233,64 @@ def search():
 
 		# find top n museums, returns dict with format {museum_name: score}
 		def getFreeMuseums():
-			freeMuseumIndices = []
-			for museum in loaded:
-				if loaded[museum]["free"] == "Yes":
-					freeIndex = museum_to_index[museum]
-					freeMuseumIndices.append(freeIndex)
-					# print(museum)
-					# print(museum)
-					# print("freemuseumIndice")
-					# print(freeMuseumIndices)
-			return freeMuseumIndices
+				freeMuseumIndices = []
+				for museum in loaded:
+						if loaded[museum]["free"] == "Yes":
+								freeIndex = museum_to_index[museum]
+								freeMuseumIndices.append(freeIndex)
+								# print(museum)
+								# print(museum)
+								# print("freemuseumIndice")
+								# print(freeMuseumIndices)
+				return freeMuseumIndices
 
-		# print(getFreeMuseums())
+		def getFamilyMuseums():
+				familyMuseumIndices = []
+				for museum in loaded:
+						if loaded[museum]["ratings"] == "Yes":
+								familyIndex = museum_to_index[museum]
+								familyMuseumIndices.append(familyIndex)
+								# print(museum)
+								# print(museum)
+								# print("freemuseumIndice")
+								# print(freeMuseumIndices)
+				return familyMuseumIndices
 
 		# find top n museums, returns dict with format {museum_name: score}
 
 		def get_top_n(museum, n, cosine_mat):
-			# get index for top n museums, excluding the query "museum"
-			freeMuseumsIndices = getFreeMuseums()
-			if free == "on":
-				top_n_ind = np.argsort(-cosine_mat)[1:]
-				top_free = []
-				for indice in top_n_ind:
-						if indice in freeMuseumsIndices:
-								top_free.append(indice)
+				freeMuseumIndices = getFreeMuseums()
+				familyMuseumIndices = getFamilyMuseums()
 				top_n_scores = {}
-				for t in top_free[:n+1]:
-						top_n_scores[index_to_museum[t]] = cosine_mat[t]
-			else:
-				top_n_ind = np.argsort(-cosine_mat)[1:n+1]
-				top_n_scores = {}
-				for t in top_n_ind:
-						top_n_scores[index_to_museum[t]] = cosine_mat[t]
-						# Museum name to score
-			return top_n_scores
+				if (free == "on") and (family == "on"):
+						top_n_ind = np.argsort(-cosine_mat)[1:]
+						top_free_family = []
+						for indice in top_n_ind:
+								if indice in freeMuseumIndices and indice in familyMuseumIndices:
+										top_free_family.append(indice)
+						for t in top_free_family[:n+1]:
+								top_n_scores[index_to_museum[t]] = cosine_mat[t]
+				if (free == "on") and (family != "on"):
+						top_n_ind = np.argsort(-cosine_mat)[1:]
+						top_free = []
+						for indice in top_n_ind:
+								if indice in freeMuseumIndices:
+										top_free.append(indice)
+						for t in top_free[:n+1]:
+								top_n_scores[index_to_museum[t]] = cosine_mat[t]
+				if (free != "on") and (family == "on"):
+						top_n_ind = np.argsort(-cosine_mat)[1:]
+						top_family = []
+						for indice in top_n_ind:
+								if indice in familyMuseumIndices:
+										top_family.append(indice)
+						for t in top_family[:n+1]:
+								top_n_scores[index_to_museum[t]] = cosine_mat[t]
+				if (free != "on") and (family != "on"):
+						top_n_ind = np.argsort(-cosine_mat)[1:n+1]
+						for t in top_n_ind:
+								top_n_scores[index_to_museum[t]] = cosine_mat[t]
+				return top_n_scores
 
 		top_5 = get_top_n(query, 5, multiplied)
 
