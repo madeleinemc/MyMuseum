@@ -15,14 +15,18 @@
             <div class="form-group">
                 <input aria-label="Search" id="input" type="text" name="search" class="form-control"
                     value="{{search_terms}}" placeholder="Search for museums" />
-                <label class="checkContainer">Hide Bird Visualizations
-                    <input aria-label="Free" id="freeInput" type="checkbox" name="freeSearch" class="form-control">
-                </label>
                 <input aria-label="Location (if preferred)" id="input-loc" type="text" name="location"
                     class="form-control" value="" placeholder="Location as (Latitude, Longitude) (optional)" />
+                <div>
+                    <input aria-label="Free" id="freeSearch" type="checkbox" name="freeSearch">
+                    <label for="freeSearch">Free </label>
+                    <input aria-label="FamilyFriendly" id="familySearch" type="checkbox" name="familySearch">
+                    <label for="familySearch">Family Friendly</label>
+                </div>
                 <button type="submit" class="btn btn-info">Go!</button>
             </div>
         </form>
+
 
         <!-- Start of Map Code -->
         <!-- Code taken from: https://developers.google.com/maps/documentation/javascript/examples/event-click-latlng#all

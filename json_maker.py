@@ -114,6 +114,13 @@ for m in museums:
 	else:
 		description[m] = None
 
+free = {}
+for m in museums:
+	if (m in csv_content):
+		free[m] = csv_content[m]["Fee"]
+	else:
+		free[m] = None
+
 
 #create dict with all info for each museum
 museum_info = {}
@@ -126,7 +133,7 @@ for m in museums:
 		review_titles[m] = None
 	if not(m in review_content):
 		review_content[m] = None
-	museum_info[m] = {'description':description[m], 'ratings': ratings[m], 'tags': tags[m], 'tokenized tags': tok_tags[m], 'review titles': review_titles[m], 'review content': review_content[m], 'tokenized content': tok_review[m], 'location': location[m]}
+	museum_info[m] = {'description':description[m], 'ratings': ratings[m], 'tags': tags[m], 'tokenized tags': tok_tags[m], 'review titles': review_titles[m], 'review content': review_content[m], 'tokenized content': tok_review[m], 'location': location[m],"free": free[m]}
 
 
 with open('museums_file.json', 'w') as f:
