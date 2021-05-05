@@ -123,6 +123,17 @@ em {
     width: 60%;
 }
 
+#checkbox {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    margin-top: 3px;
+}
+
+.checkbox-label-group {
+    padding: 5px;
+}
+
 
 /* output */
 

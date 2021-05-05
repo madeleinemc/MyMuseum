@@ -21,10 +21,14 @@
                             class="form-control" value="" placeholder="Location as (Longitude, Latitude) (optional)" />
                     </div>
                     <div id="checkbox">
-                        <input aria-label="Free" id="freeSearch" type="checkbox" name="freeSearch">
-                        <label for="freeSearch">Free </label>
-                        <input aria-label="FamilyFriendly" id="familySearch" type="checkbox" name="familySearch">
-                        <label for="familySearch">Family Friendly</label>
+                        <div class="checkbox-label-group">
+                            <input aria-label="Free" id="freeSearch" type="checkbox" name="freeSearch">
+                            <label for="freeSearch">Free</label>
+                        </div>
+                        <div class="checkbox-label-group">
+                            <input aria-label="FamilyFriendly" id="familySearch" type="checkbox" name="familySearch">
+                            <label for="familySearch">Family Friendly</label>
+                        </div>
                     </div>
                     <button id="go" type="submit" class="btn btn-info">Go!</button>
                 </div>
@@ -110,7 +114,7 @@
 
                 <iframe id="output-map" loading="lazy" allowfullscreen src="{{ data[d]['location_link']}}">
                 </iframe>
-                <!-- show/hide reviews; looks ugly but apparently works -->
+                <!-- show/hide reviews -->
                 <button onclick="toggleReviews('{{ review_list_id }}', '{{ review_toggle_id }}')"
                     id="{{ review_toggle_id }}" class="toggle-reviews">show reviews</button>
                 <ul id="{{ review_list_id }}" class="review-quotes-list hidden">
