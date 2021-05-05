@@ -315,7 +315,7 @@ def search():
 			data["    "] = ""
 			output_message = "Sorry, there are no matches at this time. Try searching for something else!"
 		else:
-			output_message = "Your search: " + query + " [" + strtime + " seconds]"
+			output_message = query + " [" + strtime + " seconds]"
 
 			for name in data:
 				# add raw review quotes to data

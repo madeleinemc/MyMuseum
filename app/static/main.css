@@ -15,12 +15,17 @@ h1 {
     height: 100vh;
 }
 
+
 body {
     background-color: burlywood;
 }
 
 main {
     min-height: 76vh;
+}
+
+em {
+    font-weight: bold;
 }
 
 .hidden {
@@ -53,7 +58,9 @@ main {
     width: 50%;
     margin-left: auto;
     margin-right: auto;
+    border-radius: 5px
 }
+
 
 #input-loc {
     width: 40%;
@@ -97,6 +104,7 @@ main {
     width: 60%;
 }
 
+
 /* output */
 
 .output-message {
@@ -109,6 +117,12 @@ main {
     max-width: 75%;
     margin: 3em auto;
     text-align: left;
+    display: flex;
+    flex-direction: row;
+    border: 2px solid black;
+    border-radius: 5px;
+    padding: 10px;
+    position: relative;
 }
 
 .output-museum-name {
@@ -152,6 +166,28 @@ footer {
     padding: 1.5em 1.5em;
     font-family: "Georgia", serif;
     font-size: 1.2em;
+}
+
+#your-search {
+    font-weight: bold;
+}
+
+#output-nonmap {
+    display: flex;
+    flex-direction: column;
+}
+
+#museum-desc {
+    width: 700px;
+    margin-right: 50px;
+}
+
+#output-map{
+    border: 0;
+    width: 300px;
+    border-radius: 5px;
+    position: absolute;
+    right: 10px;
 }
 
 /* responsive to screen width */
