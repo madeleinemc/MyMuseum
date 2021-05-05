@@ -312,7 +312,7 @@ def search():
 
 		# determine output message
 		if (len(data) == 0):
-			data["    "] = ""
+			# data["    "] = ""
 			output_message = "Sorry, there are no matches at this time. Try searching for something else!"
 		else:
 			output_message = query + " [" + strtime + " seconds]"
