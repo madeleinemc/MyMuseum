@@ -100,9 +100,8 @@
                 <div id="output-nonmap">
                     <h3 class="output-museum-name">{{ d }}</h3>
                     <p class="output-museum-desc">Score: {{ data[d]["score"] }}</p>
-                    <p class="output-museum-desc">{{ data[d]["description"] }}</p>
-                    <p class="output-museum-desc">Distance: {{ data[d]["distance"] }} km</p>
                     <p id="museum-desc" class="output-museum-desc">{{ data[d]["description"] }}</p>
+                    <p class="output-museum-desc">Distance: {{ data[d]["distance"] }} km</p>
 
                     <!-- show/hide reviews; looks ugly but apparently works -->
                     <button onclick="toggleReviews('{{ review_list_id }}', '{{ review_toggle_id }}')"
