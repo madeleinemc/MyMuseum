@@ -123,6 +123,7 @@ def build_museum_sims_cos(num_museums, input_doc_mat, index_to_museum=index_to_m
 def search():
     query = request.args.get('search')
     loc = request.args.get('location')
+    free = request.args.get("freeSearch")
     if not query:
         data = []
         output_message = ''
@@ -197,8 +198,8 @@ def search():
 
         # should I add 1 to these matrices?
         num_museums = len(museums)
-        #tags_cosine = build_museum_sims_cos(num_museums, tfidf_mat_tags)
-        #reviews_cosine = build_museum_sims_cos(num_museums, tfidf_mat_reviews)
+        # tags_cosine = build_museum_sims_cos(num_museums, tfidf_mat_tags)
+        # reviews_cosine = build_museum_sims_cos(num_museums, tfidf_mat_reviews)
         tags_cosine = get_query_cos(num_museums, tfidf_mat_tags)
         reviews_cosine = get_query_cos(num_museums, tfidf_mat_reviews)
         location_matrix = location_mat(num_museums)
@@ -209,17 +210,40 @@ def search():
         multiplied = np.multiply(multiplied, location_matrix * 0.4)
 
         # find top n museums, returns dict with format {museum_name: score}
+        def getFreeMuseums():
+            freeMuseumIndices = []
+            for museum in loaded:
+                if loaded[museum]["free"] == "Yes":
+                    freeIndex = museum_to_index[museum]
+                    freeMuseumIndices.append(freeIndex)
+                    # print(museum)
+                    # print(museum)
+                    # print("freemuseumIndice")
+                    # print(freeMuseumIndices)
+            return freeMuseumIndices
+
+        # print(getFreeMuseums())
+
+        # find top n museums, returns dict with format {museum_name: score}
 
         def get_top_n(museum, n, cosine_mat):
-            museum_index = museum_to_index[museum]
             # get index for top n museums, excluding the query "museum"
-            top_n_ind = np.argsort(-cosine_mat)[1:n+1]
-            top_n_scores = {}
-
-            for t in top_n_ind:
-                top_n_scores[index_to_museum[t]] = cosine_mat[t]
-
-            # print(top_n_scores)
+            freeMuseumsIndices = getFreeMuseums()
+            if free == "on":
+                top_n_ind = np.argsort(-cosine_mat)[1:]
+                top_free = []
+                for indice in top_n_ind:
+                    if indice in freeMuseumsIndices:
+                        top_free.append(indice)
+                top_n_scores = {}
+                for t in top_free[:n+1]:
+                    top_n_scores[index_to_museum[t]] = cosine_mat[t]
+            else:
+                top_n_ind = np.argsort(-cosine_mat)[1:n+1]
+                top_n_scores = {}
+                for t in top_n_ind:
+                    top_n_scores[index_to_museum[t]] = cosine_mat[t]
+                    # Museum name to score
             return top_n_scores
 
         top_5 = get_top_n(query, 5, multiplied)
@@ -233,7 +257,7 @@ def search():
         # for t in top_5:
         # 	print(str(i) + ': ' + index_to_museum[t])
         # 	i+=1
-        #top_5_museums = []
+        # top_5_museums = []
         # for i in top_5:
         #	top_5_museums.append(index_to_museum[i])
 
