@@ -123,8 +123,6 @@ def build_museum_sims_cos(num_museums, input_doc_mat, index_to_museum=index_to_m
 def search():
     query = request.args.get('search')
     loc = request.args.get('location')
-    free = request.args.get("freeSearch")
-    family = request.args.get("familySearch")
     if not query:
         data = []
         output_message = ''
@@ -141,10 +139,11 @@ def search():
 
         l = len(museum_info)
         museum_info[query] = {'ratings': [1, 1, 1, 1, 1], 'tags': tok_query, 'tokenized tags': tok_query,
-                              'review titles': tok_query, 'review content': tok_query, 'tokenized content': tok_query}
+                              'review titles': tok_query, 'review content': tok_query, 'tokenized content': tok_query, 'location': tok_loc}
         museums.append(query)
         museum_to_index[query] = l
         index_to_museum[l] = query
+        print(l)
 
         # min df originally 10
         tfidf_vec = TfidfVectorizer(min_df=1, max_df=0.8, max_features=5000, analyzer="word",
@@ -198,8 +197,8 @@ def search():
 
         # should I add 1 to these matrices?
         num_museums = len(museums)
-        # tags_cosine = build_museum_sims_cos(num_museums, tfidf_mat_tags)
-        # reviews_cosine = build_museum_sims_cos(num_museums, tfidf_mat_reviews)
+        #tags_cosine = build_museum_sims_cos(num_museums, tfidf_mat_tags)
+        #reviews_cosine = build_museum_sims_cos(num_museums, tfidf_mat_reviews)
         tags_cosine = get_query_cos(num_museums, tfidf_mat_tags)
         reviews_cosine = get_query_cos(num_museums, tfidf_mat_reviews)
         location_matrix = location_mat(num_museums)
@@ -207,47 +206,23 @@ def search():
         # higher = similar
         # tags and reviews weighted equally here, but can be changed
         multiplied = np.multiply(tags_cosine, reviews_cosine)
-        multiplied = np.multiply(multiplied, location_matrix)
-
-        def getFreeMuseums():
-            freeMuseumIndices = []
-            for museum in loaded:
-                if loaded[museum]["free"] == "Yes":
-                    freeIndex = museum_to_index[museum]
-                    # index = museum_to_index[museum]
-                    freeMuseumIndices.append(freeIndex)
-                    # print(museum)
-                    # print(museum)
-                    # print("freemuseumIndice")
-                    # print(freeMuseumIndices)
-            return freeMuseumIndices
-
-        # print(getFreeMuseums())
+        multiplied = np.multiply(multiplied, location_matrix * 0.4)
 
         # find top n museums, returns dict with format {museum_name: score}
 
         def get_top_n(museum, n, cosine_mat):
+            museum_index = museum_to_index[museum]
             # get index for top n museums, excluding the query "museum"
-            freeMuseumsIndices = getFreeMuseums()
-            if free == "on":
-                top_n_ind = np.argsort(-cosine_mat)[1:]
-                top_free = []
-                for indice in top_n_ind:
-                    if indice in freeMuseumsIndices:
-                        top_free.append(indice)
-                top_n_scores = {}
-                for t in top_free[:n+1]:
-                    top_n_scores[index_to_museum[t]] = cosine_mat[t]
-            else:
-                top_n_ind = np.argsort(-cosine_mat)[1:n+1]
-                top_n_scores = {}
-                for t in top_n_ind:
-                    top_n_scores[index_to_museum[t]] = cosine_mat[t]
-                    # Museum name to score
+            top_n_ind = np.argsort(-cosine_mat)[1:n+1]
+            top_n_scores = {}
+
+            for t in top_n_ind:
+                top_n_scores[index_to_museum[t]] = cosine_mat[t]
+
+            # print(top_n_scores)
             return top_n_scores
 
         top_5 = get_top_n(query, 5, multiplied)
-        getFreeMuseums()
 
         # TODO
         # 1. If time allows, narrow down location based on latitude and longitude
@@ -258,7 +233,7 @@ def search():
         # for t in top_5:
         # 	print(str(i) + ': ' + index_to_museum[t])
         # 	i+=1
-        # top_5_museums = []
+        #top_5_museums = []
         # for i in top_5:
         #	top_5_museums.append(index_to_museum[i])
 
@@ -281,8 +256,8 @@ def search():
 
         # determine output message
         if (len(data) == 0):
-            # data["    "] = ""
-            output_message = "Sorry, there are no matches at this time. Try another query!"
+            data["    "] = ""
+            output_message = "Sorry, there are no matches at this time. Try searching for something else!"
         else:
             output_message = "Your search: " + \
                 query + " [" + strtime + " seconds]"
