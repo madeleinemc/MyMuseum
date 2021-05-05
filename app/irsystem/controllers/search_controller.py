@@ -22,6 +22,7 @@ assert sys.version_info.major == 3
 project_name = "Curator"
 net_id = "Madeleine Chang (mmc337), Shefali Janorkar (skj28), Esther Lee (esl86), Yvette Hung (yh387), Tiffany Zhong (tz279)"
 
+# tokenize functions
 
 def tokenize(text):
 	temp = re.split('[^a-z]', text.lower())
@@ -40,8 +41,7 @@ def ltokenize(loc):
 					nums.append(float(w))
 	return nums
 
-# load traveler ratings
-
+# load museums file
 
 museums = []
 
@@ -54,35 +54,26 @@ for m in loaded:
 	for k in loaded[m]:
 		museum_info[m][k] = loaded[m][k]
 
+# review quotes to display
 file = open("review_quote_MERGED.json")
-# loaded = json.load(file)
 raw_review_quotes = json.load(file)
-# raw_review_quotes = {}
-# for m in loaded:
-# 	museums.append(m)
-# 	museum_info[m] = {}
-# 	for k in loaded[m]:
-# 		museum_info[m][k] = loaded[m][k]
-
-# create a TFIDF matrix
-
 
 def already_tok(d):
 	return d
 
-
 # key = museum, value = index
 museum_to_index = {}
+
+# key = index, value = museum
+index_to_museum = {}
 
 i = 0
 for m in museums:
 	museum_to_index[m] = i
 	if museum_info[m].get('description') is None:
 		museum_info[m]['description'] = m
+	index_to_museum[i] = m
 	i += 1
-
-# key = index, value = museum
-index_to_museum = {v: k for k, v in museum_to_index.items()}
 
 # get cosine similarity
 
@@ -102,23 +93,6 @@ def get_cos_sim(mus1, mus2, input_doc_mat, museum_to_index=museum_to_index):
 
 	return n/(m+1)
 
-# construct cosine similarity matrix
-
-
-# def build_museum_sims_cos(num_museums, input_doc_mat, index_to_museum=index_to_museum, museum_to_index=museum_to_index, input_get_sim_method=get_cos_sim):
-# 	cosmat = np.zeros((len(input_doc_mat), len(input_doc_mat)))
-# 	for i in range(len(input_doc_mat)):
-# 		for j in range(len(input_doc_mat)):
-# 			if (i == j):
-# 				cosmat[i][j] = 1.0
-# 			elif (i <= j):
-# 				mus1 = index_to_museum[i]
-# 				mus2 = index_to_museum[j]
-# 				cosmat[i][j] = input_get_sim_method(mus1, mus2, input_doc_mat, museum_to_index)
-# 				cosmat[j][i] = input_get_sim_method(mus1, mus2, input_doc_mat, museum_to_index)
-# 	return cosmat
-
-
 @irsystem.route('/', methods=['GET'])
 def search():
 	query = request.args.get('search')
@@ -131,6 +105,7 @@ def search():
 		# use to make input sticky
 		query = ''
 	else:
+
 		startsec = time.time()
 
 		tok_query = tokenize(query)
@@ -145,10 +120,11 @@ def search():
 			tok_loc[1] = temp
 
 		l = len(museum_info)
-		museum_info[query] = {'ratings': [1, 1, 1, 1, 1], 'tags': tok_query, 'tokenized tags': tok_query, 'review titles': tok_query, 'review content': tok_query, 'tokenized content': tok_query, 'location': tok_loc, 'description': query}
-		museums.append(query)
-		museum_to_index[query] = l
-		index_to_museum[l] = query
+		Qkey = "Q:" + query
+		museum_info[Qkey] = {'ratings': [1, 1, 1, 1, 1], 'tags': tok_query, 'tokenized tags': tok_query, 'review titles': tok_query, 'review content': tok_query, 'tokenized content': tok_query, 'location': tok_loc, 'description': query}
+		museums.append(Qkey)
+		museum_to_index[Qkey] = l
+		index_to_museum[l] = Qkey
 
 		tok_museums = {}
 		tok_description = {}
@@ -157,7 +133,7 @@ def search():
 			tok_description[m] = tokenize(museum_info[m]['description'])
 
 		distances = {}
-		distances[query] = 0.0
+		distances[Qkey] = 0.0
 
 		# min df originally 10
 		tfidf_vec = TfidfVectorizer(min_df=1, max_df=0.8, max_features=5000, analyzer="word", tokenizer=already_tok, preprocessor=already_tok, token_pattern=None)
@@ -175,11 +151,10 @@ def search():
 		tfidf_mat_description = tfidf_vec.fit_transform(tok_description[m] for m in museums).toarray()
 
 		# cosine matrices
-
 		def get_query_cos(num_museums, input_doc_mat, index_to_museum=index_to_museum, museum_to_index=museum_to_index, input_get_sim_method=get_cos_sim):
 			qcosmat = np.zeros(len(input_doc_mat))
-			mus1 = query
-			j = museum_to_index[query]
+			mus1 = Qkey
+			j = museum_to_index[Qkey]
 			for i in range(len(input_doc_mat)):
 				mus2 = index_to_museum[i]
 				if (i == j):
@@ -190,12 +165,12 @@ def search():
 
 		def location_mat(num_museums, index_to_museum=index_to_museum, museum_to_index=museum_to_index):
 				lmat = np.zeros(num_museums)
-				mus1 = query
-				j = museum_to_index[query]
+				mus1 = Qkey
+				j = museum_to_index[Qkey]
 				for i in range(num_museums):
 					mus2 = index_to_museum[i]
 					if (i == j):
-						lmat[i] = 40043
+						lmat[i] = 1.0
 					else:
 						try:
 							lat = float(museum_info[mus2]['location'][0])
@@ -206,7 +181,6 @@ def search():
 						c1 = (tok_loc[0], tok_loc[1])
 						c2 = (lat, long)
 						distance = haversine(c1, c2)
-						# lmat[i] = 360.0 - ((tok_loc[0] - lat)**2 + (tok_loc[1] - long)**2)**(1/2)
 						distances[mus2] = distance
 						lmat[i] = (40043 - distance)/40043
 				return lmat
@@ -219,17 +193,30 @@ def search():
 		description_cosine = get_query_cos(num_museums, tfidf_mat_description)
 		location_matrix = location_mat(num_museums)
 
+		# for m in tok_museums:
+		# 	if (m == Qkey):
+		# 		pass
+		# 	elif (query.lower() == m.lower()):
+		# 		k = museum_to_index[m]
+		# 		tags_cosine[k] = 1.0
+		# 		reviews_cosine[k] = 1.0
+		# 		names_cosine[k] = 1.0
+		# 		description_cosine[k] = 1.0
+		# 		location_matrix[k] = 1.0
+
 		# higher = similar
 		# tags and reviews weighted equally here, but can be changed
-		multiplied = np.multiply((tags_cosine*1.8), (reviews_cosine*1.3))
+		##multiplied = np.multiply((tags_cosine), (reviews_cosine))
 		#print(multiplied[i])
-		multiplied = np.multiply(multiplied, description_cosine)
+		##multiplied = np.multiply(multiplied, description_cosine)
 		#print(multiplied[i])
-		multiplied = np.multiply(multiplied, names_cosine*1.5)
+		#multiplied = np.multiply(multiplied, names_cosine)
 		#print(multiplied[i])
-		#multiplied = np.multiply(multiplied, location_matrix * 1.5)
-		multiplied = multiplied + location_matrix
+		##multiplied = np.multiply(multiplied, location_matrix)
+		#multiplied = multiplied + (location_matrix*0000.3)
 		#print(multiplied[i])
+
+		multiplied = tags_cosine*0.2 + reviews_cosine*0.1 + description_cosine*0.05 + (location_matrix)*0.65
 
 		# find top n museums, returns dict with format {museum_name: score}
 		def getFreeMuseums():
@@ -310,13 +297,13 @@ def search():
 		# data is a dict with format {museum_name: {description: x, score: x}}
 		data = {}
 		for museum in top_5:
-			if top_5[museum] != 0:
-				data[museum] = {"description": museum_info[museum]['description'], "score": round(top_5[museum], 3)}
+			if top_5[museum] >= 0.1:
+				data[museum] = {"description": museum_info[museum]['description'], "score": round(top_5[museum], 3), "distance": round(distances[museum], 3)}
 
 		# clean dataset
 		del museums[-1]
-		del museum_info[query]
-		del museum_to_index[query]
+		del museum_info[Qkey]
+		del museum_to_index[Qkey]
 		del index_to_museum[l]
 
 		endsec = time.time()
