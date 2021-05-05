@@ -93,6 +93,7 @@
             <h2 class="output-message">
                 <em>Your Search:</em> {{ output_message }}
             </h2>
+
             {% for d in data %}
             {% set d_with_underscores = d|replace(" ", "_") %}
             {% set review_list_id = "reviews-list-" ~ d_with_underscores %}
