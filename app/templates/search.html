@@ -8,82 +8,84 @@
 
 <body>
     <main>
-        <form class="form-inline global-search">
-            <h1>Curator</h1>
-            <p>Find the museum for you.</p>
+        <div id="search-input">
+            <form class="form-inline global-search">
+                <h1>Curator</h1>
+                <p>Find the museum for you.</p>
 
-            <div class="form-group">
-                <input aria-label="Search" id="input" type="text" name="search" class="form-control"
-                    value="{{search_terms}}" placeholder="Search for museums" />
-                <input aria-label="Location (if preferred)" id="input-loc" type="text" name="location"
-                    class="form-control" value="" placeholder="Location as (Longitude, Latitude) (optional)" />
-                <div>
-                    <input aria-label="Free" id="freeSearch" type="checkbox" name="freeSearch">
-                    <label for="freeSearch">Free </label>
-                    <input aria-label="FamilyFriendly" id="familySearch" type="checkbox" name="familySearch">
-                    <label for="familySearch">Family Friendly</label>
+                <div class="form-group">
+                    <input aria-label="Search" id="input" type="text" name="search" class="form-control"
+                        value="{{search_terms}}" placeholder="Search for museums" />
+                    <input aria-label="Location (if preferred)" id="input-loc" type="text" name="location"
+                        class="form-control" value="" placeholder="Location as (Longitude, Latitude) (optional)" />
+                    <div>
+                        <input aria-label="Free" id="freeSearch" type="checkbox" name="freeSearch">
+                        <label for="freeSearch">Free </label>
+                        <input aria-label="FamilyFriendly" id="familySearch" type="checkbox" name="familySearch">
+                        <label for="familySearch">Family Friendly</label>
+                    </div>
+                    <button type="submit" class="btn btn-info">Go!</button>
                 </div>
-                <button type="submit" class="btn btn-info">Go!</button>
-            </div>
-        </form>
+            </form>
 
 
-        <!-- Start of Map Code -->
-        <!-- Code taken from: https://developers.google.com/maps/documentation/javascript/examples/event-click-latlng#all
+            <!-- Start of Map Code -->
+            <!-- Code taken from: https://developers.google.com/maps/documentation/javascript/examples/event-click-latlng#all
           with some modifications-->
 
-        <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
-        <script>
-            // These variables indicate the clicked longitude and latitude
-            var curr_long = 0;
-            var curr_lat = 0;
+            <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+            <script>
+                // These variables indicate the clicked longitude and latitude
+                var curr_long = 0;
+                var curr_lat = 0;
 
-            function initMap() {
-                const myLatlng = { lat: 38.368474229577934, lng: -99.11682335273923 };
-                const map = new google.maps.Map(document.getElementById("map"), {
-                    zoom: 4,
-                    center: myLatlng,
-                });
-                // Create the initial InfoWindow.
-                let infoWindow = new google.maps.InfoWindow({
-                    content: "Click the map to get Latitude and Longitude!",
-                    position: myLatlng,
-                });
-                infoWindow.open(map);
-                // const geocoder = new google.maps.Geocoder(); subscription required :/
-                // Configure the click listener.
-                map.addListener("click", (mapsMouseEvent) => {
-                    // Close the current InfoWindow.
-                    infoWindow.close();
-                    // Create a new InfoWindow.
-                    infoWindow = new google.maps.InfoWindow({
-                        position: mapsMouseEvent.latLng,
+                function initMap() {
+                    const myLatlng = { lat: 38.368474229577934, lng: -99.11682335273923 };
+                    const map = new google.maps.Map(document.getElementById("map"), {
+                        zoom: 4,
+                        center: myLatlng,
+                    });
+                    // Create the initial InfoWindow.
+                    let infoWindow = new google.maps.InfoWindow({
+                        content: "Click the map to get Latitude and Longitude!",
+                        position: myLatlng,
+                    });
+                    infoWindow.open(map);
+                    // const geocoder = new google.maps.Geocoder(); subscription required :/
+                    // Configure the click listener.
+                    map.addListener("click", (mapsMouseEvent) => {
+                        // Close the current InfoWindow.
+                        infoWindow.close();
+                        // Create a new InfoWindow.
+                        infoWindow = new google.maps.InfoWindow({
+                            position: mapsMouseEvent.latLng,
+                        });
+
+                        // Get current longitude and latitude
+                        curr_long = mapsMouseEvent.latLng.toJSON().lng.toFixed(2);
+                        curr_lat = mapsMouseEvent.latLng.toJSON().lat.toFixed(2);
+
+                        // Format for the input
+                        formatted_long_lat = "(" + curr_long + ", " + curr_lat + ")"
+                        document.getElementById("input-loc").value = formatted_long_lat;
+
+                        // Displays what to show on the info window -- TODO?
+                        infoWindow.setContent(
+                            "longitude: " + curr_long + " latitude: " + curr_lat
+                        );
+                        infoWindow.open(map);
                     });
 
-                    // Get current longitude and latitude
-                    curr_long = mapsMouseEvent.latLng.toJSON().lng.toFixed(2);
-                    curr_lat = mapsMouseEvent.latLng.toJSON().lat.toFixed(2);
+                }
+                console.log(curr_long);
+            </script>
 
-                    // Format for the input
-                    formatted_long_lat = "(" + curr_long + ", " + curr_lat + ")"
-                    document.getElementById("input-loc").value = formatted_long_lat;
+            <div id="map"></div>
+            <script
+                src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD1Bq3RwUmv7r8VG-3p1OWQVGMypRfTv1I&callback=initMap&libraries=&v=weekly"
+                async></script>
 
-                    // Displays what to show on the info window -- TODO?
-                    infoWindow.setContent(
-                        "longitude: " + curr_long + " latitude: " + curr_lat
-                    );
-                    infoWindow.open(map);
-                });
-
-            }
-            console.log(curr_long);
-        </script>
-
-        <div id="map"></div>
-        <script
-            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD1Bq3RwUmv7r8VG-3p1OWQVGMypRfTv1I&callback=initMap&libraries=&v=weekly"
-            async></script>
-
+        </div>
         <!-- End of Map Code -->
 
         <div class="search-output global-search">
