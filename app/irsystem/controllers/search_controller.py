@@ -297,7 +297,7 @@ def search():
 		# data is a dict with format {museum_name: {description: x, score: x}}
 		data = {}
 		for museum in top_5:
-			if top_5[museum] >= 0.1:
+			if top_5[museum] >= 0.65:
 				data[museum] = {"description": museum_info[museum]['description'], "score": round(top_5[museum], 3), "distance": round(distances[museum], 3)}
 
 		# clean dataset
