@@ -90,10 +90,10 @@
         <div class="search-output global-search">
 
             {% if data|length() > 0 %}
-            {% for d in data %}
             <h2 class="output-message">
                 <em>Your Search:</em> {{ output_message }}
             </h2>
+            {% for d in data %}
             {% set d_with_underscores = d|replace(" ", "_") %}
             {% set review_list_id = "reviews-list-" ~ d_with_underscores %}
             {% set review_toggle_id = "toggle-reviews-" ~ d_with_underscores %}
