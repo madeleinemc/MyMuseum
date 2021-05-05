@@ -14,10 +14,12 @@
                 <p>Find the museum for you.</p>
 
                 <div class="form-group">
-                    <input aria-label="Search" id="input" type="text" name="search" class="form-control"
-                        value="{{search_terms}}" placeholder="Search for museums" />
-                    <input aria-label="Location (if preferred)" id="input-loc" type="text" name="location"
-                        class="form-control" value="" placeholder="Location as (Longitude, Latitude) (optional)" />
+                    <div id="search-group">
+                        <input aria-label="Search" id="input" type="text" name="search" class="form-control"
+                            value="{{search_terms}}" placeholder="Search for museums" />
+                        <input aria-label="Location (if preferred)" id="input-loc" type="text" name="location"
+                            class="form-control" value="" placeholder="Location as (Longitude, Latitude) (optional)" />
+                    </div>
                     <div id="checkbox">
                         <input aria-label="Free" id="freeSearch" type="checkbox" name="freeSearch">
                         <label for="freeSearch">Free </label>

@@ -15,6 +15,11 @@ h1 {
     height: 100vh;
 }
 
+#search-group {
+    display: flex;
+    flex-direction: row;
+}
+
 body {
     background-color: burlywood;
 }
@@ -133,7 +138,7 @@ em {
     text-align: left;
     display: flex;
     flex-direction: row;
-    border: 2px solid black;
+    border: 1px solid black;
     border-radius: 5px;
     padding: 10px;
     position: relative;
@@ -245,4 +250,21 @@ footer {
         height: 200px;
     }
 
+}
+
+@media (max-width:1000px) {
+
+    .global-search .form-control {
+        width: 100%;
+    }
+
+    #map {
+        width: 70%;
+    }
+
+    .form-group {
+        margin-left: auto;
+        margin-right: auto;
+        width: 90%;
+    }
 }
