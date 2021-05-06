@@ -1,7 +1,7 @@
 from sklearn.feature_extraction.text import TfidfVectorizer
 import numpy as np
 import json
-%matplotlib inline
+# %matplotlib inline
 import re
 import matplotlib.pyplot as plt
 import nltk
