@@ -15,6 +15,13 @@ from haversine import haversine, Unit
 import matplotlib.pyplot as plt
 import nltk
 nltk.download('stopwords')
+#ML
+import tensorflow as tf
+from keras.models import Sequential, load_model
+
+import pickle
+import heapq
+import functools
 
 assert sys.version_info.major == 3
 
@@ -105,6 +112,47 @@ def search():
 		# use to make input sticky
 		query = ''
 	else:
+
+		# ML COMPONENT (also in ML.py) ********************************
+
+		model = load_model('keras_model.h5')
+		history = pickle.load(open("history.p", "rb"))
+
+		tokenlist = []
+		for m in museum_info:
+			tokenlist.append(museum_info[m]['tokenized tags']) # try just tags since training takes too long
+
+		tokens = []
+		for museum in tokenlist:
+			tokens+= museum
+
+		vocab, index = {}, 1  # start indexing from 1
+		vocab['<pad>'] = 0  # add a padding token
+		for token in tokens:
+			if token not in vocab:
+				vocab[token] = index
+				index += 1
+
+		inv_vocab = {v: k for k, v in vocab.items()}
+
+		def prepare_input(text):
+				tok_text= tokenize(text)
+				x = np.zeros((1, 1, len(vocab)))
+				for word in tok_text:
+					if word in vocab.keys():
+						x[0][0][vocab[word]] += 1
+
+				return x
+
+		# query is what the user has directly typed in
+		seq = query.lower()
+		seq = prepare_input(seq)
+		pred = model.predict(seq)
+		max = np.argmax(pred[0])
+		pred_word = inv_vocab[max]
+		if (len(query) == 0): pred_word = "museum" # if there are no key words in the query
+
+		# END OF ML COMPONENT ********************************
 
 		startsec = time.time()
 
@@ -313,9 +361,9 @@ def search():
 		# determine output message
 		if (len(data) == 0):
 			# data["    "] = ""
-			output_message = "Sorry, there are no matches at this time. Try searching for something else!"
+			output_message = "Sorry, there are no matches at this time. Try searching for something else, perhaps \"" + pred_word + "\""
 		else:
-			output_message = query + " [" + strtime + " seconds]"
+			output_message = query + " [" + strtime + " seconds]." + "\n" + "Would you like to search for \"" + pred_word + "\"?"
 
 			for name in data:
 				# add raw review quotes to data
